@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_restplus import Resource, Api
+from flask_restplus import Api
 
 
 class AgayaApi(Flask):
