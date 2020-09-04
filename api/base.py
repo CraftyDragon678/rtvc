@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_restplus import Api
 
-
 class AgayaApi(Flask):
     def __init__(self):
         super().__init__(__name__)
