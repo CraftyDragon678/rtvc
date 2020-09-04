@@ -16,10 +16,10 @@ class Kakao(Resource):
 
         res = requests.post("https://kauth.kakao.com/oauth/token", {
             'grant_type': "authorization_code",
-            'client_id': os.getenv("AUTH_CLIENT_ID"),
-            'redirect_uri': os.getenv("AUTH_REDIRECT_URI"),
+            'client_id': os.getenv("KAKAO_CLIENT_ID"),
+            'redirect_uri': os.getenv("KAKAO_REDIRECT_URI"),
             'code': args['code'],
-            'client_secret': os.getenv("AUTH_CLIENT_SECRET")
+            'client_secret': os.getenv("KAKAO_CLIENT_SECRET")
         })
         if res.status_code == 200:
             data = res.json()
