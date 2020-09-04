@@ -22,7 +22,7 @@ class AgayaDBClient(MongoClient):
         if not DB_FULL:
             DB_FULL = "mongodb://%s:%s@%s:%s/%s?authSource=admin" % (
                 os.getenv("DB_ID"),
-                urllib.parse.quote(os.getenv("DB_PW")),
+                os.getenv("DB_PW"),
                 os.getenv("DB_HOST"),
                 os.getenv("DB_PORT"),
                 os.getenv("DB_DB")
