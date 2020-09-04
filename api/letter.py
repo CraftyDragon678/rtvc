@@ -45,6 +45,7 @@ class Letter(Resource):
 
 @api.route("/<id>")
 @api.param('id', 'letter id')
+@api.response(200, 'Success')
 @api.response(404, 'Not Found')
 class LetterId(Resource):
     def get(self, id):
