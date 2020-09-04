@@ -14,3 +14,6 @@ PyQt5
 multiprocess
 numba==0.48
 flask
+flask-restplus
+pymongo
+dnspython
