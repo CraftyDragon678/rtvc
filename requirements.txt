@@ -20,3 +20,4 @@ dnspython
 python-dotenv
 torch
 torchvision
+Werkzeug==0.16.1
