@@ -18,3 +18,5 @@ flask-restplus
 pymongo
 dnspython
 python-dotenv
+torch
+torchvision
