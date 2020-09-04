@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restplus import Api
 from .test import api as testNS
 from .letter import api as letterNS
+from .auth import api as authNS
 import db
 
 class AgayaApi(Flask):
@@ -12,5 +13,6 @@ class AgayaApi(Flask):
         self.api = Api(self, title="Agaya API", version='0.1')
         self.api.add_namespace(testNS)
         self.api.add_namespace(letterNS)
+        self.api.add_namespace(authNS)
 
         self.api.db = db.AgayaDBClient()['stac']
