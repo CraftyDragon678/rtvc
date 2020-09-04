@@ -7,4 +7,4 @@ class AgayaApi(Flask):
         super().__init__(__name__)
         self.config.SWAGGER_UI_DOC_EXPANSION = 'full'
 
-        self.api = Api(self)
+        self.api = Api(self, title="Agaya API", version='0.1')
