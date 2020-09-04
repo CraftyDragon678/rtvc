@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_restplus import Api
+from .test import api as testNS
 
 class AgayaApi(Flask):
     def __init__(self):
@@ -7,3 +8,4 @@ class AgayaApi(Flask):
         self.config.SWAGGER_UI_DOC_EXPANSION = 'full'
 
         self.api = Api(self, title="Agaya API", version='0.1')
+        self.api.add_namespace(testNS)
