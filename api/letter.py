@@ -1,6 +1,9 @@
 from flask import request
 from flask_restplus import Namespace, Resource, fields
+from pymongo.database import Database
+from bson.objectid import ObjectId
 import random
+import db
 
 api = Namespace('letter')
 
@@ -22,7 +25,7 @@ api.inherit('PostLetter', api.models['Letter'], {
 })
 
 api.model('LetterInfo', {
-    'id': fields.String,
+    '_id': fields.String,
     'from': fields.Nested(api.models['AccountInfo']),
     'to': fields.Nested(api.models['AccountInfo']),
     'name': fields.String,
@@ -36,9 +39,8 @@ LETTERS = [
 class Letter(Resource):
     @api.expect(api.models['PostLetter'])
     def post(self):
-        letter = request.json
-        letter['id'] = '%x' % random.randint(0, 16**32 - 1)
-        LETTERS.append(letter)
+        db: Database = self.api.db
+        db['letter'].insert(request.json)
         return {'status': 'success'}
 
 @api.route("/<id>")
@@ -46,18 +48,25 @@ class Letter(Resource):
 @api.response(404, 'Not Found')
 class LetterId(Resource):
     def get(self, id):
-        letter = list(filter(lambda x: x['id'] == id, LETTERS))
-        if len(letter) == 0:
-            return {'status': 'fail'}, 404
-        return letter[0]
+        db: Database = self.api.db
+        res = db['letter'].find_one({"_id": ObjectId(id)})
+        if res:
+            return api.marshal(res, api.models['Letter'])
+        return {'status': 'fail'}, 404
 
+    @api.response(204, "Success")
     def delete(self, id):
-        pass
+        db: Database = self.api.db
+        res = db['letter'].delete_one({"_id": ObjectId(id)})
+        if res.deleted_count:
+            return "", 204
+        return {'status': 'fail'}, 404
 
 @api.route("/list")
 class List(Resource):
     def get(self):
+        db: Database = self.api.db
         return {
             'status': 'success',
-            'letters': api.marshal(LETTERS, api.models['LetterInfo'])
+            'letters': api.marshal(list(db['letter'].find()), api.models['LetterInfo'])
         }
