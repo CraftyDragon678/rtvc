@@ -4,6 +4,7 @@ from .test import api as testNS
 from .letter import api as letterNS
 from .auth import api as authNS
 import db
+import os
 
 class AgayaApi(Flask):
     def __init__(self):
@@ -16,3 +17,4 @@ class AgayaApi(Flask):
         self.api.add_namespace(authNS)
 
         self.api.db = db.AgayaDBClient()['stac']
+        self.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
