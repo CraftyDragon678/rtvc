@@ -31,10 +31,6 @@ api.model('LetterInfo', {
     'name': fields.String,
 })
 
-LETTERS = [
-
-]
-
 @api.route("/")
 class Letter(Resource):
     @api.expect(api.models['PostLetter'])
