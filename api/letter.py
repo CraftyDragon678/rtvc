@@ -45,9 +45,9 @@ class Letter(Resource):
 
 @api.route("/<id>")
 @api.param('id', 'letter id')
-@api.response(200, 'Success')
 @api.response(404, 'Not Found')
 class LetterId(Resource):
+    @api.response(200, 'Success')
     def get(self, id):
         db: Database = self.api.db
         res = db['letter'].find_one({"_id": ObjectId(id)})
