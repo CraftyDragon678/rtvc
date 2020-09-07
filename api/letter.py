@@ -7,15 +7,10 @@ import db
 
 api = Namespace('letter')
 
-api.model('AccountInfo', {
-    'email': fields.String(required=True),
-    'name': fields.String(required=True)
-})
-
 api.model('Letter', {
-    'from': fields.Nested(api.models['AccountInfo']),
-    'to': fields.Nested(api.models['AccountInfo']),
-    'name': fields.String(required=True),
+    'from': fields.Integer,
+    'to': fields.Integer,
+    'title': fields.String(required=True),
     'file': fields.String,
     'message': fields.String
 })
@@ -26,9 +21,9 @@ api.inherit('PostLetter', api.models['Letter'], {
 
 api.model('LetterInfo', {
     '_id': fields.String,
-    'from': fields.Nested(api.models['AccountInfo']),
-    'to': fields.Nested(api.models['AccountInfo']),
-    'name': fields.String,
+    'from': fields.Integer,
+    'to': fields.Integer,
+    'title': fields.String,
 })
 
 @api.route("/")
