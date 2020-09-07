@@ -8,8 +8,8 @@ import db
 api = Namespace('letter')
 
 api.model('AccountInfo', {
-    'email': fields.String(required=True, attribute='email'),
-    'name': fields.String(required=True, attribute='name')
+    'email': fields.String(required=True),
+    'name': fields.String(required=True)
 })
 
 api.model('Letter', {
