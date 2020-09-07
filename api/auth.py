@@ -49,6 +49,7 @@ class Kakao(Resource):
 
         get_attr = lambda attr: kakao_account[attr] if kakao_account['has_' + attr] and not kakao_account[attr + '_needs_agreement'] else None
         userdata = {
+            '_id': me['id'],
             'type': "KAKAO",
             'connected_at': datetime.datetime.strptime(me['connected_at'], "%Y-%m-%dT%H:%M:%SZ"),
             'nickname': kakao_account['profile']['nickname'],
