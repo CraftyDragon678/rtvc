@@ -6,7 +6,7 @@ api = Namespace('test', description='test namespace')
 
 @api.route("/")
 class Test(Resource):
-    @api.header("Authorization")
+    @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
         return g.user['nickname']
