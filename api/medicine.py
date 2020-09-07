@@ -32,6 +32,12 @@ class Medicine(Resource):
         return medicines
 
 
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def post(self, date):
+        pass
+
+
 @api.route("/now")
 class Now(Resource):
     @api.doc(security="jwt")
