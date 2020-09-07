@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restplus import Api
 from .test import api as testNS
+from .medicine import api as medicineNS
 from .letter import api as letterNS
 from .auth import api as authNS
 import db
@@ -19,6 +20,7 @@ class AgayaApi(Flask):
             }
         })
         self.api.add_namespace(testNS)
+        self.api.add_namespace(medicineNS)
         self.api.add_namespace(letterNS)
         self.api.add_namespace(authNS)
 
