@@ -34,6 +34,8 @@ class Medicine(Resource):
 
 @api.route("/now")
 class Now(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
     def get(self):
         date = (datetime.datetime.utcnow() + datetime.timedelta(hours=9)).strftime("%Y-%m-%d")
         print(date)
