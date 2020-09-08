@@ -15,8 +15,12 @@ api.model('Letter', {
     'message': fields.String
 })
 
-api.inherit('PostLetter', api.models['Letter'], {
+api.model('PostLetter', {
     'version': fields.String(required=True),
+    'to': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'file': fields.String,
+    'message': fields.String
 })
 
 api.model('LetterInfo', {
