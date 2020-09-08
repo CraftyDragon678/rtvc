@@ -1,9 +1,18 @@
 from flask import current_app
-from flask_restplus import Namespace, Resource, reqparse
+from flask_restplus import Namespace, Resource, reqparse, fields
 from pymongo.database import Database
+from bson.objectid import ObjectId
 import requests
 
 api = Namespace('hospital')
+
+api.model('Hospital', {
+    'code': fields.String(attribute='_id'),
+    'lat': fields.Float,
+    'lng': fields.Float,
+    'name': fields.String,
+    'number': fields.String
+})
 
 @api.route("/list")
 class List(Resource):
@@ -33,6 +42,7 @@ class List(Resource):
         if res.status_code == 404:
             return {'message': "Can't find hospital"}, 404
         lists = res.json()
+        hospitals = []
         db: Database = self.api.db
         for hospital in lists:
             hospital['lat'] = float(hospital['lat'])
@@ -40,6 +50,6 @@ class List(Resource):
             del hospital['long']
             db['hospitals'].update_one({'number': hospital['number']}, {"$set": hospital}, upsert=True)
             res = db['hospitals'].find_one({'number': hospital['number']})
-            hospital['code'] = str(res['_id'])
+            hospitals.append(api.marshal(res, api.models['Hospital']))
 
-        return {'count': len(lists), 'hospitals': lists}
+        return {'count': len(lists), 'hospitals': hospitals}
