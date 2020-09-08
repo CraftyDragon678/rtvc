@@ -16,7 +16,6 @@ api.model('Letter', {
 })
 
 api.model('PostLetter', {
-    'version': fields.String(required=True),
     'to': fields.Integer(required=True),
     'title': fields.String(required=True),
     'file': fields.String,
