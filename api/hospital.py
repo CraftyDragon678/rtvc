@@ -2,7 +2,9 @@ from flask import current_app
 from flask_restplus import Namespace, Resource, reqparse, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 import requests
+import utils
 
 api = Namespace('hospital')
 
@@ -53,3 +55,15 @@ class List(Resource):
             hospitals.append(api.marshal(res, api.models['Hospital']))
 
         return {'count': len(lists), 'hospitals': hospitals}
+
+@api.route("/<_id>")
+class Info(Resource):
+    def get(self, _id):
+        db: Database = self.api.db
+        try:
+            res = db['hospitals'].find_one({'_id': ObjectId(_id)})
+        except InvalidId:
+            return {'message': utils.ERROR_MESSAGES['invalid_objectid']}, 400
+        if not res:
+            return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
+        return api.marshal(res, api.models['Hospital'])
