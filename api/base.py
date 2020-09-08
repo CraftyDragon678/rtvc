@@ -15,7 +15,7 @@ class AgayaApi(Flask):
         self.config.SWAGGER_UI_DOC_EXPANSION = 'list'
         self.json_encoder = utils.MongoEngineJSONEncoder
 
-        self.api = Api(self, title="Agaya API", version='0.1', authorizations={
+        self.api = Api(self, title="Agaya API", version='0.2', authorizations={
             'jwt': {
                 'type': 'apiKey',
                 'in': 'header',
