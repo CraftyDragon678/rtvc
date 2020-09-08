@@ -40,10 +40,10 @@ class Letter(Resource):
         data = request.json
 
         if not 'to' in data:
-            return {"message": "please specify the user who you send this message."}, 400
+            return {"message": utils.ERROR_MESSAGES['no_user'] % "you send this message."}, 400
         
         if not db['users'].find_one({'_id': data['to']}):
-            return {"message": "user doesn't exist"}, 400
+            return {"message": utils.ERROR_MESSAGES['user_not_exist']}, 400
 
         newdata = {
             'from': g.user['_id'],
