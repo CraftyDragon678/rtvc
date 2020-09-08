@@ -7,11 +7,13 @@ from .letter import api as letterNS
 from .auth import api as authNS
 import db
 import os
+import utils
 
 class AgayaApi(Flask):
     def __init__(self):
         super().__init__(__name__)
         self.config.SWAGGER_UI_DOC_EXPANSION = 'list'
+        self.json_encoder = utils.MongoEngineJSONEncoder
 
         self.api = Api(self, title="Agaya API", version='0.1', authorizations={
             'jwt': {
