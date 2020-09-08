@@ -1,5 +1,6 @@
 from flask import current_app
 from flask_restplus import Namespace, Resource, reqparse
+from pymongo.database import Database
 import requests
 
 api = Namespace('hospital')
@@ -24,6 +25,7 @@ class List(Resource):
             return {'message': "Can't find address"}, 404
         region = res['documents'][0]['address']
 
+        # ========== 병원 DB가 없어서 직접 구합니다 ==========
         res = requests.get("http://happycastle.xyz/hospital?city={}&gu={}".format(
             region['region_1depth_name'],
             region['region_2depth_name']
@@ -31,5 +33,13 @@ class List(Resource):
         if res.status_code == 404:
             return {'message': "Can't find hospital"}, 404
         lists = res.json()
+        db: Database = self.api.db
+        for hospital in lists:
+            hospital['lat'] = float(hospital['lat'])
+            hospital['lng'] = float(hospital['long'])
+            del hospital['long']
+            db['hospitals'].update_one({'number': hospital['number']}, {"$set": hospital}, upsert=True)
+            res = db['hospitals'].find_one({'number': hospital['number']})
+            hospital['code'] = str(res['_id'])
 
         return {'count': len(lists), 'hospitals': lists}
