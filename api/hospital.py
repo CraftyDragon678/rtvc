@@ -28,6 +28,8 @@ class List(Resource):
             region['region_1depth_name'],
             region['region_2depth_name']
         ))
+        if res.status_code == 404:
+            return {'message': "Can't find hospital"}, 404
         lists = res.json()
 
         return {'count': len(lists), 'hospitals': lists}
