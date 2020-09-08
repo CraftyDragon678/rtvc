@@ -1,9 +1,10 @@
-from flask import request
+from flask import request, g
 from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
 import random
 import db
+import utils
 
 api = Namespace('letter')
 
@@ -32,9 +33,29 @@ api.model('LetterInfo', {
 @api.route("/")
 class Letter(Resource):
     @api.expect(api.models['PostLetter'])
+    @api.doc(security="jwt")
+    @utils.auth_required
     def post(self):
         db: Database = self.api.db
-        db['letter'].insert(request.json)
+        data = request.json
+
+        if not 'to' in data:
+            return {"message": "please specify the user who you send this message."}, 400
+        
+        if not db['users'].find_one({'_id': data['to']}):
+            return {"message": "user doesn't exist"}, 400
+
+        newdata = {
+            'from': g.user['_id'],
+            'to': data['to'],
+            'title': data['title'],
+        }
+        if 'file' in data:
+            newdata['file'] = data['file']
+        if 'message' in data:
+            newdata['message'] = data['message']
+
+        db['letter'].insert(newdata)
         return {'status': 'success'}
 
 @api.route("/<id>")
