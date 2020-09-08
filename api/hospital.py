@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, request, g
 from flask_restplus import Namespace, Resource, reqparse, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
@@ -14,6 +14,11 @@ api.model('Hospital', {
     'lng': fields.Float,
     'name': fields.String,
     'number': fields.String
+})
+
+api.model('PostReservation', {
+    'code': fields.String,
+    'time': fields.DateTime
 })
 
 @api.route("/list")
@@ -67,3 +72,26 @@ class Info(Resource):
         if not res:
             return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
         return api.marshal(res, api.models['Hospital'])
+
+@api.route("/reservation")
+class PostReservation(Resource):
+    @api.expect(api.models['PostReservation'])
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def post(self):
+        db: Database = self.api.db
+        data = request.json
+
+        try:
+            if not db['hospitals'].find_one({'_id': ObjectId(data['code'])}):
+                return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
+            res = db['hospitalrevervations'].insert_one({
+                'code': data['code'],
+                'who': g.user['_id'],
+                'time': data['time'],
+                })
+            return {'reservation_id': str(res.inserted_id)}
+        except KeyError:
+            return {'message': utils.ERROR_MESSAGES['bad_request']}, 400
+        except InvalidId:
+            return {'message': utils.ERROR_MESSAGES['invalid_objectid']}, 400
