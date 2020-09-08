@@ -2,6 +2,7 @@ from flask import request, g
 from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 import random
 import db
 import utils
@@ -58,18 +59,39 @@ class Letter(Resource):
         db['letter'].insert(newdata)
         return {'status': 'success'}
 
-@api.route("/<id>")
-@api.param('id', 'letter id')
+@api.route("/<_id>")
+@api.param('_id', 'letter id')
 @api.response(200, 'Success')
 @api.response(404, 'Not Found')
 class LetterId(Resource):
-    def get(self, id):
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def get(self, _id):
         db: Database = self.api.db
-        res = db['letter'].find_one({"_id": ObjectId(id)})
-        if res:
-            return api.marshal(res, api.models['Letter'])
-        return {'status': 'fail'}, 404
+        try:
+            _id = ObjectId(_id)
+        except InvalidId:
+            return {'message': utils.ERROR_MESSAGES['invalid_objectid']}, 400
+        res = db['letter'].aggregate([
+            {
+                "$match": {
+                    "_id": ObjectId(_id),
+                    "$or": [
+                        {"from": g.user['_id']},
+                        {"to": g.user['_id']},
+                    ]
+                }
+            },
+        ])
+        try:
+            res = next(res)
+            if res:
+                return api.marshal(res, api.models['Letter'])
+        except StopIteration:
+            return {'status': 'fail'}, 404
 
+    @api.doc(security="jwt")
+    @utils.auth_required
     def delete(self, id):
         db: Database = self.api.db
         res = db['letter'].delete_one({"_id": ObjectId(id)})
