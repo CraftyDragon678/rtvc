@@ -79,9 +79,26 @@ class LetterId(Resource):
 
 @api.route("/list")
 class List(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
     def get(self):
         db: Database = self.api.db
+        letters = db['letter'].aggregate([
+            {
+                "$match": {
+                    "$or": [
+                        {"from": g.user['_id']},
+                        {"to": g.user['_id']},
+                    ]
+                }
+            },
+            {
+                "$project": {
+                    "from": 1, "to": 1, "title": 1
+                }
+            }
+        ])
         return {
             'status': 'success',
-            'letters': api.marshal(list(db['letter'].find()), api.models['LetterInfo'])
+            'letters': api.marshal(list(letters), api.models['LetterInfo'])
         }
