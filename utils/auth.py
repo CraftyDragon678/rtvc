@@ -9,7 +9,7 @@ def auth_required(func):
     def wrapper(*args, **kwargs):
         token = request.headers.get("Authorization")
         if token is None:
-            return {"message": utils.ERROR_MESSAGES['no_token']}
+            return {"message": utils.ERROR_MESSAGES['no_token']}, 401
 
         try:
             payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], "HS256")
@@ -17,7 +17,7 @@ def auth_required(func):
             payload = None
         
         if payload is None:
-            return {"message": utils.ERROR_MESSAGES['invalid_token']}
+            return {"message": utils.ERROR_MESSAGES['invalid_token']}, 401
         
         g.user = payload
         return func(*args, **kwargs)
