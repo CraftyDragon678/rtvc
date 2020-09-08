@@ -1,6 +1,7 @@
-from flask import request, current_app, g, Response
+from flask import request, current_app, g
 from functools import wraps
 import jwt
+import utils
 
 
 def auth_required(func):
@@ -8,7 +9,7 @@ def auth_required(func):
     def wrapper(*args, **kwargs):
         token = request.headers.get("Authorization")
         if token is None:
-            return Response(status=401)
+            return {"message": utils.ERROR_MESSAGES['no token']}
 
         try:
             payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], "HS256")
@@ -16,7 +17,7 @@ def auth_required(func):
             payload = None
         
         if payload is None:
-            return Response(status=401)
+            return {"message": utils.ERROR_MESSAGES['not_valid_token']}
         
         g.user = payload
         return func(*args, **kwargs)
