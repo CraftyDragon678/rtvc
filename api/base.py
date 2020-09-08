@@ -30,3 +30,4 @@ class AgayaApi(Flask):
 
         self.api.db = db.AgayaDBClient()['stac']
         self.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
+        self.config['KAKAO_REST_API_KEY'] = os.getenv("KAKAO_REST_API_KEY")
