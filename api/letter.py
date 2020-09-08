@@ -88,7 +88,7 @@ class LetterId(Resource):
             if res:
                 return api.marshal(res, api.models['Letter'])
         except StopIteration:
-            return {'status': 'fail'}, 404
+            return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
     @api.doc(security="jwt")
     @utils.auth_required
