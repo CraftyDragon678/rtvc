@@ -60,9 +60,9 @@ class Letter(Resource):
 
 @api.route("/<id>")
 @api.param('id', 'letter id')
+@api.response(200, 'Success')
 @api.response(404, 'Not Found')
 class LetterId(Resource):
-    @api.response(200, 'Success')
     def get(self, id):
         db: Database = self.api.db
         res = db['letter'].find_one({"_id": ObjectId(id)})
@@ -70,12 +70,11 @@ class LetterId(Resource):
             return api.marshal(res, api.models['Letter'])
         return {'status': 'fail'}, 404
 
-    @api.response(204, "Success")
     def delete(self, id):
         db: Database = self.api.db
         res = db['letter'].delete_one({"_id": ObjectId(id)})
         if res.deleted_count:
-            return "", 204
+            return {'status': 'success'}
         return {'status': 'fail'}, 404
 
 @api.route("/list")
