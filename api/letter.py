@@ -56,7 +56,7 @@ class Letter(Resource):
         if 'message' in data:
             newdata['message'] = data['message']
 
-        db['letter'].insert(newdata)
+        db['letters'].insert(newdata)
         return {'status': 'success'}
 
 @api.route("/<_id>")
@@ -72,7 +72,7 @@ class LetterId(Resource):
             _id = ObjectId(_id)
         except InvalidId:
             return {'message': utils.ERROR_MESSAGES['invalid_objectid']}, 400
-        res = db['letter'].aggregate([
+        res = db['letters'].aggregate([
             {
                 "$match": {
                     "_id": ObjectId(_id),
@@ -94,7 +94,7 @@ class LetterId(Resource):
     @utils.auth_required
     def delete(self, id):
         db: Database = self.api.db
-        res = db['letter'].delete_one({"_id": ObjectId(id)})
+        res = db['letters'].delete_one({"_id": ObjectId(id)})
         if res.deleted_count:
             return {'status': 'success'}
         return {'status': 'fail'}, 404
@@ -105,7 +105,7 @@ class List(Resource):
     @utils.auth_required
     def get(self):
         db: Database = self.api.db
-        letters = db['letter'].aggregate([
+        letters = db['letters'].aggregate([
             {
                 "$match": {
                     "$or": [
