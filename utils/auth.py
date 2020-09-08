@@ -17,7 +17,7 @@ def auth_required(func):
             payload = None
         
         if payload is None:
-            return {"message": utils.ERROR_MESSAGES['not_valid_token']}
+            return {"message": utils.ERROR_MESSAGES['invalid_token']}
         
         g.user = payload
         return func(*args, **kwargs)
