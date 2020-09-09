@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 import requests
 import utils
+from dateutil.parser import parse
 
 api = Namespace('hospital')
 
@@ -86,9 +87,9 @@ class PostReservation(Resource):
             if not db['hospitals'].find_one({'_id': ObjectId(data['code'])}):
                 return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
             res = db['hospitalreservations'].insert_one({
-                'code': data['code'],
+                'code': ObjectId(data['code']),
                 'who': g.user['_id'],
-                'time': data['time'],
+                'time': parse(data['time']),
                 })
             return {'reservation_id': str(res.inserted_id)}
         except KeyError:
