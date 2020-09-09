@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 import requests
 import utils
+from datetime import datetime, timedelta
 from dateutil.parser import parse
 
 api = Namespace('hospital')
@@ -19,6 +20,14 @@ api.model('Hospital', {
 
 api.model('PostReservation', {
     'code': fields.String,
+    'time': fields.DateTime
+})
+
+api.model('ReservationInfo', {
+    'name': fields.String,
+    'lat': fields.Float,
+    'lng': fields.Float,
+    'reservation_id': fields.String,
     'time': fields.DateTime
 })
 
@@ -96,3 +105,54 @@ class PostReservation(Resource):
             return {'message': utils.ERROR_MESSAGES['bad_request']}, 400
         except InvalidId:
             return {'message': utils.ERROR_MESSAGES['invalid_objectid']}, 400
+
+@api.route("/reservation/list")
+class ReservationList(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
+    @api.param('time')
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('time')
+        args = parser.parse_args()
+        db: Database = self.api.db
+
+        _filter = {'who': g.user['_id']}
+
+        if args['time']:
+            date = parse(args['time'])
+            date = datetime(date.year, date.month, date.day)
+            _filter['time'] = {
+                "$gte": date,
+                "$lt": date + timedelta(days=1)
+            }
+        res = db['hospitalreservations'].aggregate([
+            {
+                "$match": _filter
+            },
+            {
+                "$lookup": {
+                    "from": "hospitals",
+                    "let": { "_id": "$code" },
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$eq": ["$_id", "$$id"]
+                                }
+                            }
+                        }
+                    ],
+                    "as": "res"
+                }
+            },
+            {
+                "$unwind": "$res"
+            }
+        ])
+        lists = []
+        for i in res:
+            lists.append(api.marshal(i, api.models['ReservationInfo']))
+        
+        return {'count': len(lists), 'list': lists}
+
