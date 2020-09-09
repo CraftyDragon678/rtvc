@@ -85,7 +85,7 @@ class PostReservation(Resource):
         try:
             if not db['hospitals'].find_one({'_id': ObjectId(data['code'])}):
                 return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
-            res = db['hospitalrevervations'].insert_one({
+            res = db['hospitalreservations'].insert_one({
                 'code': data['code'],
                 'who': g.user['_id'],
                 'time': data['time'],
