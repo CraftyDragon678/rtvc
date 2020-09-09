@@ -175,18 +175,18 @@ class DeleteReservation(Resource):
         db: Database = self.api.db
 
         try:
-        res = db['hospitalreservations'].update_one({
-                '_id': ObjectId(_id),
-                'who': g.user['_id'],
-                'deleted': False
-            }, {
-            "$set": {
-                'deleted': True
-            }
-        })
+            res = db['hospitalreservations'].update_one({
+                    '_id': ObjectId(_id),
+                    'who': g.user['_id'],
+                    'deleted': False
+                }, {
+                "$set": {
+                    'deleted': True
+                }
+            })
 
-        if res.modified_count:
-            return {'status': "success"}
+            if res.modified_count:
+                return {'status': "success"}
             return {'message': utils.ERROR_MESSAGES['not_exist']}
         except InvalidId:
             return {'message': utils.ERROR_MESSAGES['invalid_objectid']}
