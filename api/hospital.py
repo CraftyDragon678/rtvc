@@ -96,9 +96,9 @@ class PostReservation(Resource):
             if not db['hospitals'].find_one({'_id': ObjectId(data['code'])}):
                 return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
             res = db['hospitalreservations'].insert_one({
-                'code': ObjectId(data['code']),
-                'who': g.user['_id'],
-                'time': parse(data['time']),
+                    'code': ObjectId(data['code']),
+                    'who': g.user['_id'],
+                    'time': parse(data['time']),
                     'deleted': False
                 })
             return {'reservation_id': str(res.inserted_id)}
@@ -166,3 +166,24 @@ class ReservationList(Resource):
         
         return {'count': len(lists), 'list': lists}
 
+
+@api.route("/reservation/<_id>")
+class DeleteReservation(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def delete(self, _id):
+        db: Database = self.api.db
+
+        res = db['hospitalreservations'].update_one({
+                '_id': ObjectId(_id),
+                'who': g.user['_id'],
+                'deleted': False
+            }, {
+            "$set": {
+                'deleted': True
+            }
+        })
+
+        if res.modified_count:
+            return {'status': "success"}
+        return {'status': utils.ERROR_MESSAGES['not_exist']}
