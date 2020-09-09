@@ -6,6 +6,7 @@ from .hospital import api as hospitalNS
 from .letter import api as letterNS
 from .volunteer import api as volunteerNS
 from .advise import api as adviseNS
+from .newlang import api as newlangNS
 from .auth import api as authNS
 import db
 import os
@@ -28,6 +29,7 @@ class AgayaApi(Flask):
         self.api.add_namespace(letterNS)
         self.api.add_namespace(volunteerNS)
         self.api.add_namespace(adviseNS)
+        self.api.add_namespace(newlangNS)
         self.api.add_namespace(authNS)
 
         self.api.db = db.AgayaDBClient()['stac']
