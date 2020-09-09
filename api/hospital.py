@@ -133,7 +133,7 @@ class ReservationList(Resource):
             {
                 "$lookup": {
                     "from": "hospitals",
-                    "let": { "_id": "$code" },
+                    "let": { "id": "$code" },
                     "pipeline": [
                         {
                             "$match": {
@@ -148,6 +148,15 @@ class ReservationList(Resource):
             },
             {
                 "$unwind": "$res"
+            },
+            {
+                "$project": {
+                    "name": "$res.name",
+                    "lat": "$res.lat",
+                    "lng": "$res.lng",
+                    "reservation_id": "$_id",
+                    "time": "$time"
+                }
             }
         ])
         lists = []
