@@ -99,6 +99,7 @@ class PostReservation(Resource):
                 'code': ObjectId(data['code']),
                 'who': g.user['_id'],
                 'time': parse(data['time']),
+                    'deleted': False
                 })
             return {'reservation_id': str(res.inserted_id)}
         except KeyError:
