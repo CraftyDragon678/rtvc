@@ -31,6 +31,17 @@ api.model('ReservationInfo', {
     'time': fields.DateTime
 })
 
+
+api.model('ReservationAdminInfo', {
+    'reservation_id': fields.String(attribute='_id'),
+    'time': fields.DateTime,
+    'who': fields.Nested({
+        '_id': fields.Integer,
+        'email': fields.String,
+        'nickname': fields.String
+    })
+})
+
 @api.route("/list")
 class List(Resource):
     @api.param('category', "OS 정형외과/DR 피부과/GS 일반외과/MG 내과", enum=['OS', 'DR', 'GS', 'MG'])
@@ -188,5 +199,59 @@ class DeleteReservation(Resource):
             if res.modified_count:
                 return {'status': "success"}
             return {'message': utils.ERROR_MESSAGES['not_exist']}
+        except InvalidId:
+            return {'message': utils.ERROR_MESSAGES['invalid_objectid']}
+
+
+@api.route("/reservation/admin/")
+class ReservationAdmin(Resource):
+    @api.param('code')
+    @api.param('time')
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('code')
+        parser.add_argument('time')
+        args = parser.parse_args()
+
+        db: Database = self.api.db
+
+        try:
+            _filter = {'code': ObjectId(args['code'])}
+            if args['time']:
+                date = parse(args['time'])
+                date = datetime(date.year, date.month, date.day)
+                _filter['time'] = {
+                    "$gte": date,
+                    "$lt": date + timedelta(days=1)
+                }
+            res = db['hospitalreservations'].aggregate([
+                {
+                    "$match": _filter
+                },
+                {
+                    "$lookup": {
+                        "from": "users",
+                        "let": { "who": "$who" },
+                        "pipeline": [
+                            {
+                                "$match": {
+                                    "$expr": {
+                                        "$eq": ["$_id", "$$who"]
+                                    }
+                                }
+                            }
+                        ],
+                        "as": "who"
+                    }
+                },
+                {
+                    "$unwind": "$who"
+                }
+            ])
+            lists = []
+            for i in res:
+                lists.append(api.marshal(i, api.models['ReservationAdminInfo']))
+            
+            return {'count': len(lists), 'list': lists}
         except InvalidId:
             return {'message': utils.ERROR_MESSAGES['invalid_objectid']}
