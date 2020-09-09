@@ -174,6 +174,7 @@ class DeleteReservation(Resource):
     def delete(self, _id):
         db: Database = self.api.db
 
+        try:
         res = db['hospitalreservations'].update_one({
                 '_id': ObjectId(_id),
                 'who': g.user['_id'],
@@ -186,4 +187,6 @@ class DeleteReservation(Resource):
 
         if res.modified_count:
             return {'status': "success"}
-        return {'status': utils.ERROR_MESSAGES['not_exist']}
+            return {'message': utils.ERROR_MESSAGES['not_exist']}
+        except InvalidId:
+            return {'message': utils.ERROR_MESSAGES['invalid_objectid']}
