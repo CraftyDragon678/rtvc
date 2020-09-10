@@ -59,7 +59,7 @@ class Kakao(Resource):
             'gender': get_attr('gender'),
         }
         
-        db['users'].update({'_id': me['id']}, userdata, upsert=True)
+        db['users'].update({'_id': me['id']}, {"$set": userdata}, upsert=True)
 
         userdata['exp'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=60 * 60 * 24)
         del userdata['connected_at']
