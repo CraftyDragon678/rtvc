@@ -54,4 +54,9 @@ class Level(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
-        return g.user['nickname']
+        db: Database = self.api.db
+        res = db['users'].find_one({'_id': g.user['_id']})
+        if 'newlangscore' in res:
+            return {'score': res['newlangscore']}
+        db['users'].update_one({'_id': g.user['_id']}, {"$set": {'newlangscore': 0}})
+        return {'score': 0}
