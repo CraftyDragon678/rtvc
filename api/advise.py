@@ -14,6 +14,12 @@ api.model('PostAdvise', {
     })))
 })
 
+api.model('Advice', {
+    'code': fields.String,
+    'message': fields.String,
+    'todos': fields.List(fields.Nested(api.models['Todo']))
+})
+
 @api.route("/")
 class PostAdvise(Resource):
     @api.expect(api.models['PostAdvise'])
@@ -39,5 +45,12 @@ class PostAdvise(Resource):
         except TypeError:
             return {'message', utils.ERROR_MESSAGES['bad_request']}, 400
     
+    @api.doc(security="jwt")
+    @utils.auth_required
     def get(self):
-        pass
+        db: Database = self.api.db
+        res = db['advices'].find({'to': g.user['_id']})
+        advices = []
+        for item in res:
+            advices.append(api.marshal(item, api.models['Advice']))
+        return {'count': len(advices), 'advices': advices}
