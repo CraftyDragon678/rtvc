@@ -79,8 +79,8 @@ class LetterId(Resource):
                 "$match": {
                     "_id": ObjectId(_id),
                     "$or": [
-                        {"from": g.user['_id']},
-                        {"to": g.user['_id']},
+                        {"from": g.user['_id'], "deleted_from": False},
+                        {"to": g.user['_id'], "deleted_to": False},
                     ]
                 }
             },
@@ -94,10 +94,11 @@ class LetterId(Resource):
 
     @api.doc(security="jwt")
     @utils.auth_required
-    def delete(self, id):
+    def delete(self, _id):
         db: Database = self.api.db
-        res = db['letters'].delete_one({"_id": ObjectId(id)})
-        if res.deleted_count:
+        res1 = db['letters'].update_one({"_id": ObjectId(_id), "from": g.user['_id']}, {"$set": {"deleted_from": True}})
+        res2 = db['letters'].update_one({"_id": ObjectId(_id), "to": g.user['_id']}, {"$set": {"deleted_to": True}})
+        if res1.modified_count or res2.modified_count:
             return {'status': 'success'}
         return {'status': 'fail'}, 404
 
@@ -111,8 +112,8 @@ class List(Resource):
             {
                 "$match": {
                     "$or": [
-                        {"from": g.user['_id']},
-                        {"to": g.user['_id']},
+                        {"from": g.user['_id'], "deleted_from": False},
+                        {"to": g.user['_id'], "deleted_to": False},
                     ]
                 }
             },
