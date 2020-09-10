@@ -50,6 +50,8 @@ class Letter(Resource):
             'from': g.user['_id'],
             'to': data['to'],
             'title': data['title'],
+            'deleted_from': False,
+            'deleted_to': False
         }
         if 'file' in data:
             newdata['file'] = data['file']
