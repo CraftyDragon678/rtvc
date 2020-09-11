@@ -3,6 +3,7 @@ from flask_restplus import Api
 from .test import api as testNS
 from .medicine import api as medicineNS
 from .hospital import api as hospitalNS
+from .activity import api as activityNS
 from .letter import api as letterNS
 from .volunteer import api as volunteerNS
 from .advise import api as adviseNS
@@ -26,6 +27,7 @@ class AgayaApi(Flask):
         self.api.add_namespace(testNS)
         self.api.add_namespace(medicineNS)
         self.api.add_namespace(hospitalNS)
+        self.api.add_namespace(activityNS)
         self.api.add_namespace(letterNS)
         self.api.add_namespace(volunteerNS)
         self.api.add_namespace(adviseNS)
