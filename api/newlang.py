@@ -38,9 +38,17 @@ class Quiz(Resource):
     @utils.auth_required
     def post(self):
         db: Database = self.api.db
-        res = db['newlangs'].find_one({}, projection={'_id': 0, 'quiz.answer': 1, 'quiz.description': 1}, sort=[('_id', -1)])
+        res = db['newlangs'].find_one({}, projection={'quiz.answer': 1, 'quiz.description': 1}, sort=[('_id', -1)])
         try:
+            user = db['users'].find_one({'_id': g.user['_id']})
+            if 'lastquiz' in user and user['lastquiz'] == res['_id']:
+                return {'message': "already solved"}, 400
+
             if int(request.json['answer']) == res['quiz']['answer']:
+                db['users'].update_one({'_id': g.user['_id']}, {
+                    "$inc": {'newlangscore': 1},
+                    "$set": {'lastquiz': res['_id']}
+                    })
                 return {'message': "correct", 'description': res['quiz']['description']}
             return {'message': "wrong"}
         except ValueError:
