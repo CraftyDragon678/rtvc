@@ -1,22 +1,23 @@
 from flask import request, g
 from flask_restplus import Namespace, Resource, fields
+from pymongo.database import Database
 import utils
-import datetime
+from datetime import datetime
 
 api = Namespace('medicine')
 
 MEDICINES = [
     {
-        "date": "2019-08-17",
+        "start": datetime(2019, 8, 17),
+        "end": datetime(2019, 8, 19),
         "time": "morning",
-        "_id": 1,
         "name": "약약",
         "amount": 1
     },
     {
-        "date": "2020-09-07",
+        "start": datetime(2020, 9, 7),
+        "end": datetime(2020, 9, 19),
         "time": "morning",
-        "_id": 1,
         "name": "약약",
         "amount": 1
     },
@@ -35,7 +36,11 @@ class Medicine(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def post(self, date):
-        pass
+        data = request.json
+        db: Database = self.api.db
+        # db['medicine'].insert_one({
+
+        # })
 
 
 @api.route("/now")
