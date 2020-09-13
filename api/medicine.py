@@ -14,6 +14,12 @@ api.model('Medicine', {
     'time': fields.String
 })
 
+api.model('DateMedicine', {
+    'morning': fields.List(fields.Nested(api.models['Medicine'])),
+    'lunch': fields.List(fields.Nested(api.models['Medicine'])),
+    'evening': fields.List(fields.Nested(api.models['Medicine']))
+})
+
 api.model('TodayMedicine', {
     'medicines': fields.List(fields.Nested(api.models['Medicine'])),
 })
@@ -23,8 +29,22 @@ api.model('TodayMedicine', {
 class Medicine(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
+    @api.marshal_with(api.models['DateMedicine'])
     def get(self, date):
-        medicines = list(filter(lambda x: x['date'] == date, MEDICINES))
+        db: Database = self.api.db
+        date = dateutil.parser.parse(date)
+        res = db['medicine'].find({
+            'start': {'$lte': date},
+            'end': {'$gte': date},
+            'who': g.user['_id']
+        }, projection={'time': 1, 'name': 1, 'amount': 1})
+        medicines = {
+            'morning': [],
+            'lunch': [],
+            'evening': []
+        }
+        for i in res:
+            medicines[i['time']].append(i)
         return medicines
 
 
