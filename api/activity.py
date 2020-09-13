@@ -50,15 +50,29 @@ class List(Resource):
     @api.param('lat', "위도", type=float)
     @api.param('lng', "경도", type=float)
     def get(self):
+        db: Database = self.api.db
         parser = reqparse.RequestParser()
         parser.add_argument('category')
         parser.add_argument('lat', type=float)
         parser.add_argument('lng', type=float)
         args = parser.parse_args()
 
-        activities = []
+        res = requests.get(
+                "https://dapi.kakao.com/v2/local/geo/coord2address.json?x={}&y={}".format(args['lng'], args['lat']),
+                headers={"Authorization": "KakaoAK " + current_app.config['KAKAO_REST_API_KEY']}
+            ).json()
+        if not res['documents']:
+            return {'message': "Can't find address"}, 404
+        region = res['documents'][0]['address']
 
-        return {'count': len(lists), 'activities': activities}
+        activities = db['activities'].find({
+            'city': region['region_1depth_name'],
+            'gu': region['region_2depth_name'],
+        })
+        activities = list(activities)
+
+        # TODO 마샬링
+        return {'count': len(activities), 'activities': activities}
 
 
 @api.route("/<_id>")
