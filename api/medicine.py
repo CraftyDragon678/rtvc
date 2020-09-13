@@ -14,14 +14,31 @@ api.model('Medicine', {
     'time': fields.String
 })
 
+api.model('MedicinePost', {
+    'name': fields.String,
+    'amount': fields.Integer,
+})
+
 api.model('DateMedicine', {
     'morning': fields.List(fields.Nested(api.models['Medicine'])),
     'lunch': fields.List(fields.Nested(api.models['Medicine'])),
     'evening': fields.List(fields.Nested(api.models['Medicine']))
 })
 
+api.model('DateMedicinePost', {
+    'morning': fields.List(fields.Nested(api.models['MedicinePost'])),
+    'lunch': fields.List(fields.Nested(api.models['MedicinePost'])),
+    'evening': fields.List(fields.Nested(api.models['MedicinePost']))
+})
+
 api.model('TodayMedicine', {
     'medicines': fields.List(fields.Nested(api.models['Medicine'])),
+})
+
+api.model('PostMedicine', {
+    'from': fields.DateTime,
+    'to': fields.DateTime,
+    'medicine': fields.Nested(api.models['DateMedicinePost'])
 })
 
 @api.route("/<date>")
@@ -48,15 +65,28 @@ class Medicine(Resource):
         return medicines
 
 
+@api.route("/")
+class PostMedicine(Resource):
+    @api.expect(api.models['PostMedicine'])
     @api.doc(security="jwt")
     @utils.auth_required
-    def post(self, date):
+    def post(self):
         data = request.json
         db: Database = self.api.db
-        data['from']
-        db['medicine'].insert_one({
-            
-        })
+        start = dateutil.parser.parse(data['from'])
+        end = dateutil.parser.parse(data['to'])
+        medicines = []
+        for time in ['morning', 'lunch', 'evening']:
+            for item in data['medicine'][time]:
+                medicines.append({
+                    **item,
+                    'start': start,
+                    'end': end,
+                    'time': time,
+                    'who': g.user['_id']
+                })
+        db['medicine'].insert_many(medicines)
+        return {'status': "success"}
 
 
 @api.route("/now")
