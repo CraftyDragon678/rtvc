@@ -7,6 +7,17 @@ import dateutil
 
 api = Namespace('medicine')
 
+api.model('Medicine', {
+    '_id': fields.String,
+    'name': fields.String,
+    'amount': fields.Integer,
+    'time': fields.String
+})
+
+api.model('TodayMedicine', {
+    'medicines': fields.List(fields.Nested(api.models['Medicine'])),
+})
+
 @api.route("/<date>")
 @api.param("date", "2006-01-02 같은 형태로")
 class Medicine(Resource):
@@ -32,6 +43,7 @@ class Medicine(Resource):
 class Now(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
+    @api.marshal_with(api.models['TodayMedicine'])
     def get(self):
         db: Database = self.api.db
         today = datetime.now()
@@ -39,5 +51,5 @@ class Now(Resource):
             'start': {'$lte': today},
             'end': {'$gte': today},
             'who': g.user['_id']
-        }, projection={'_id': 0, 'time': 1, 'name': 1, 'amount': 1})
+        }, projection={'time': 1, 'name': 1, 'amount': 1})
         return {'medicines': list(res)}
