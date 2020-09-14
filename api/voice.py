@@ -10,12 +10,12 @@ class Voice(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
-        tts: TTS = self.api.tts
-        tts.synthesize(request.files['audio'])
         pass
 
 
     @api.doc(security="jwt")
     @utils.auth_required
     def post(self):
+        tts: TTS = self.api.tts
+        tts.synthesize(request.files['audio'])
         pass
