@@ -9,6 +9,7 @@ from .advise import api as adviseNS
 from .newlang import api as newlangNS
 from .voice import api as voiceNS
 from .auth import api as authNS
+from utils import TTS
 import db
 import os
 
@@ -37,3 +38,5 @@ class AgayaApi(Flask):
         self.api.db = db.AgayaDBClient()['stac']
         self.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
         self.config['KAKAO_REST_API_KEY'] = os.getenv("KAKAO_REST_API_KEY")
+
+        self.api.tts = TTS()
