@@ -15,7 +15,7 @@ class Synthesizer:
     sample_rate = hparams.sample_rate
     hparams = hparams
     
-    def __init__(self, checkpoints_dir: Path, verbose=True, low_mem=False):
+    def __init__(self, checkpoints_dir: Path, verbose=True, low_mem=False, seed=None):
         """
         Creates a synthesizer ready for inference. The actual model isn't loaded in memory until
         needed or until load() is called.
@@ -26,10 +26,14 @@ class Synthesizer:
         :param low_mem: if True, the model will be loaded in a separate process and its resources 
         will be released after each usage. Adds a large overhead, only recommended if your GPU 
         memory is low (<= 2gb)
+        :param seed: optional integer for seeding random number generators when initializing model
+        This makes the synthesizer output consistent for a given embedding and input text.
+        However, it requires the model to be reloaded whenever a text is synthesized.
         """
         self.verbose = verbose
         self._low_mem = low_mem
-        
+        self._seed = seed
+
         # Prepare the model
         self._model = None  # type: Tacotron2
         checkpoint_state = tf.train.get_checkpoint_state(checkpoints_dir)
@@ -40,7 +44,19 @@ class Synthesizer:
             model_name = checkpoints_dir.parent.name.replace("logs-", "")
             step = int(self.checkpoint_fpath[self.checkpoint_fpath.rfind('-') + 1:])
             print("Found synthesizer \"%s\" trained to step %d" % (model_name, step))
-     
+
+    def set_seed(self, new_seed):
+        """
+        Updates the seed that initializes random number generators associated with Tacotron2.
+        Returns the new seed state as confirmation.
+        """
+        try:
+            self._seed = int(new_seed)
+        except:
+            self._seed = None
+
+        return self._seed
+
     def is_loaded(self):
         """
         Whether the model is loaded in GPU memory.
@@ -54,8 +70,8 @@ class Synthesizer:
         """
         if self._low_mem:
             raise Exception("Cannot load the synthesizer permanently in low mem mode")
-        tf.reset_default_graph()
-        self._model = Tacotron2(self.checkpoint_fpath, hparams)
+        tf.compat.v1.reset_default_graph()
+        self._model = Tacotron2(self.checkpoint_fpath, hparams, seed=self._seed)
             
     def synthesize_spectrograms(self, texts: List[str],
                                 embeddings: Union[np.ndarray, List[np.ndarray]],
@@ -73,7 +89,8 @@ class Synthesizer:
         """
         if not self._low_mem:
             # Usual inference mode: load the model on the first request and keep it loaded.
-            if not self.is_loaded():
+            # Reload it every time for deterministic operation if seed specified.
+            if not self.is_loaded() or self._seed is not None:
                 self.load()
             specs, alignments = self._model.my_synthesize(embeddings, texts)
         else:
@@ -88,8 +105,8 @@ class Synthesizer:
     @staticmethod
     def _one_shot_synthesize_spectrograms(checkpoint_fpath, embeddings, texts):
         # Load the model and forward the inputs
-        tf.reset_default_graph()
-        model = Tacotron2(checkpoint_fpath, hparams)
+        tf.compat.v1.reset_default_graph()
+        model = Tacotron2(checkpoint_fpath, hparams, seed=self._seed)
         specs, alignments = model.my_synthesize(embeddings, texts)
         
         # Detach the outputs (not doing so will cause the process to hang)
@@ -108,7 +125,7 @@ class Synthesizer:
         Loads and preprocesses an audio file under the same conditions the audio files were used to
         train the synthesizer. 
         """
-        wav = librosa.load(fpath, hparams.sample_rate)[0]
+        wav = librosa.load(str(fpath), hparams.sample_rate)[0]
         if hparams.rescale:
             wav = wav / np.abs(wav).max() * hparams.rescaling_max
         return wav
@@ -134,4 +151,3 @@ class Synthesizer:
         with the same parameters present in hparams.py.
         """
         return audio.inv_mel_spectrogram(mel, hparams)
-    
