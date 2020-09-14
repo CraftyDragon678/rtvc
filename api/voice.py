@@ -1,5 +1,8 @@
-from flask import request, g
+from flask import request, g, send_file
 from flask_restplus import Namespace, Resource, fields
+from pymongo.database import Database
+from datetime import datetime
+import numpy as np
 from utils import TTS
 import utils
 
@@ -15,8 +18,15 @@ class Voice(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
-        pass
+        tts: TTS = self.api.tts
+        db: Database = self.api.db
 
+        res = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
+        embed = np.array(res['data'], dtype=np.float32)
+        data = request.json
+
+        wav = tts.vocode(embed, data['text'])
+        return send_file(wav, mimetype='audio/wav')
 
     @api.doc(security="jwt")
     @utils.auth_required
