@@ -18,4 +18,4 @@ class Voice(Resource):
     def post(self):
         tts: TTS = self.api.tts
         tts.synthesize(request.files['audio'])
-        pass
+        return {'status': "success"}
