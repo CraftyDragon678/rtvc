@@ -5,8 +5,13 @@ import utils
 
 api = Namespace('voice')
 
+api.model('RequestVoice', {
+    'text': fields.List(fields.String)
+})
+
 @api.route("/")
 class Voice(Resource):
+    @api.expect(api.models['RequestVoice'])
     @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
