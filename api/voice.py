@@ -22,5 +22,12 @@ class Voice(Resource):
     @utils.auth_required
     def post(self):
         tts: TTS = self.api.tts
-        tts.method(request.files['audio'])
+        db: Database = self.api.db
+
+        embed = tts.encode(request.files['audio'])
+        db['embeds'].insert_one({
+            'who': g.user['_id'],
+            'data': embed.tolist(),
+            'createdAt': datetime.utcnow()
+            })
         return {'status': "success"}
