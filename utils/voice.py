@@ -14,7 +14,7 @@ class TTS():
         self.synthesizer = Synthesizer(Path("synthesizer/saved_models/logs-pretrained/taco_pretrained"))
         vocoder.load_model(Path("vocoder/saved_models/pretrained/pretrained.pt"))
 
-    def synthesize(self, f: FileStorage):
+    def encode(self, f: FileStorage):
         data, _ = sf.read(f)
         wav = data.T
         preprocessed_wav = encoder.preprocess_wav(wav)

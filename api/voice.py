@@ -17,5 +17,5 @@ class Voice(Resource):
     @utils.auth_required
     def post(self):
         tts: TTS = self.api.tts
-        tts.synthesize(request.files['audio'])
+        tts.method(request.files['audio'])
         return {'status': "success"}
