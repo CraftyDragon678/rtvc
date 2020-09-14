@@ -22,3 +22,4 @@ torch
 torchvision
 Werkzeug==0.16.1
 PyJWT
+webrtcvad
