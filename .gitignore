@@ -6,3 +6,6 @@ __pycache__
 *.crt
 *.key
 *.pem
+
+datasets
+saved_models
