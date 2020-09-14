@@ -11,3 +11,10 @@ class TTS():
         encoder.load_model("encoder/saved_models/pretrained.pt")
         self.synthesizer = Synthesizer("synthesizer/saved_models/logs-pretrained/taco_pretrained")
         vocoder.load_model("vocoder/saved_models/pretrained/pretrained.pt")
+
+    def synthesize(self, f):
+        preprocessed_wav = encoder.preprocess_wav(f)
+
+        embed = encoder.embed_utterance(f)
+
+        print(type(embed))
