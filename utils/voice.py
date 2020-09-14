@@ -19,4 +19,4 @@ class TTS():
         wav = data.T
         preprocessed_wav = encoder.preprocess_wav(wav)
 
-        embed = encoder.embed_utterance(preprocessed_wav)
+        return encoder.embed_utterance(preprocessed_wav)
