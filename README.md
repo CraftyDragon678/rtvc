@@ -8,3 +8,6 @@ python3.7 -m venv .venv
 source ./.venv/bin/active
 pip install -r requirements.txt
 ```
+
+### pretrained model
+[here](https://github.com/CorentinJ/Real-Time-Voice-Cloning/wiki/Pretrained-models)
