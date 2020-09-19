@@ -3,6 +3,7 @@ from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from datetime import datetime
 import random
 import db
 import utils
@@ -13,6 +14,7 @@ api.model('Letter', {
     'from': fields.Integer,
     'to': fields.Integer,
     'title': fields.String(required=True),
+    'date': fields.DateTime,
     'file': fields.String,
     'message': fields.String
 })
@@ -29,6 +31,7 @@ api.model('LetterInfo', {
     'from': fields.Integer,
     'to': fields.Integer,
     'title': fields.String,
+    'date': fields.DateTime,
 })
 
 @api.route("/")
@@ -50,6 +53,7 @@ class Letter(Resource):
             'from': g.user['_id'],
             'to': data['to'],
             'title': data['title'],
+            'date': datetime.utcnow(),
             'deleted_from': False,
             'deleted_to': False
         }
@@ -119,7 +123,7 @@ class List(Resource):
             },
             {
                 "$project": {
-                    "from": 1, "to": 1, "title": 1
+                    "from": 1, "to": 1, "title": 1, "date": 1
                 }
             }
         ])
