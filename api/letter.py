@@ -14,7 +14,7 @@ api.model('Letter', {
     'from': fields.Integer,
     'to': fields.Integer,
     'title': fields.String(required=True),
-    'date': fields.DateTime,
+    'date': fields.DateTime(dt_format='rfc822'),
     'file': fields.String,
     'message': fields.String
 })
@@ -31,7 +31,7 @@ api.model('LetterInfo', {
     'from': fields.Integer,
     'to': fields.Integer,
     'title': fields.String,
-    'date': fields.DateTime,
+    'date': fields.DateTime(dt_format='rfc822'),
 })
 
 @api.route("/")

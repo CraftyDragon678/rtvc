@@ -36,8 +36,8 @@ api.model('TodayMedicine', {
 })
 
 api.model('PostMedicine', {
-    'from': fields.DateTime,
-    'to': fields.DateTime,
+    'from': fields.DateTime(dt_format='rfc822'),
+    'to': fields.DateTime(dt_format='rfc822'),
     'medicine': fields.Nested(api.models['DateMedicinePost'])
 })
 

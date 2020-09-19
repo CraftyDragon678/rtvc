@@ -20,7 +20,7 @@ api.model('Hospital', {
 
 api.model('PostReservation', {
     'code': fields.String,
-    'time': fields.DateTime
+    'time': fields.DateTime(dt_format='rfc822')
 })
 
 api.model('ReservationInfo', {
@@ -28,13 +28,13 @@ api.model('ReservationInfo', {
     'lat': fields.Float,
     'lng': fields.Float,
     'reservation_id': fields.String,
-    'time': fields.DateTime
+    'time': fields.DateTime(dt_format='rfc822')
 })
 
 
 api.model('ReservationAdminInfo', {
     'reservation_id': fields.String(attribute='_id'),
-    'time': fields.DateTime,
+    'time': fields.DateTime(dt_format='rfc822'),
     'who': fields.Nested({
         '_id': fields.Integer,
         'email': fields.String,
