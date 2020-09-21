@@ -41,6 +41,9 @@ api.model('PostMedicine', {
     'medicine': fields.Nested(api.models['DateMedicinePost'])
 })
 
+api.model('EatMedicine', {
+    'time': fields.String
+})
 @api.route("/<date>")
 @api.param("date", "2006-01-02 같은 형태로")
 class Medicine(Resource):
@@ -83,7 +86,8 @@ class PostMedicine(Resource):
                     'start': start,
                     'end': end,
                     'time': time,
-                    'who': g.user['_id']
+                    'who': data['who'],
+                    'dates': []
                 })
         db['medicine'].insert_many(medicines)
         return {'status': "success"}
@@ -97,9 +101,45 @@ class Now(Resource):
     def get(self):
         db: Database = self.api.db
         today = datetime.now()
+        today2 = datetime.now().strftime('%Y-%m-%d')
         res = db['medicine'].find({
             'start': {'$lte': today},
             'end': {'$gte': today},
-            'who': g.user['_id']
+            'who': g.user['_id'],
+            'dates': {
+                '$nin': [
+                    today2
+                ]
+            }
         }, projection={'time': 1, 'name': 1, 'amount': 1})
         return {'medicines': list(res)}
+
+@api.route("/eat")
+class Eat(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
+    @api.marshal_with(api.models['EatMedicine'])
+    def post(self):
+        db: Database = self.api.db
+        data = request.json
+        today = datetime.now().strftime('%Y-%m-%d')
+        res = db['medicine'].find({
+            'who': g.user['_id'],
+            'time': data['time']
+        })
+        if not today in res[0]['dates']:
+            db['medicine'].update({
+                'who': g.user['_id'],
+                'time': data['time']
+            }, {
+                '$push': {
+                    'dates': today
+                }
+            })
+            return {
+                'status': 'successful'
+            }
+        else:
+            return {
+                'status': 'Already Ate'
+            }

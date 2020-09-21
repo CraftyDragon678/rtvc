@@ -7,7 +7,7 @@ import requests
 import utils
 from datetime import datetime, timedelta
 from dateutil.parser import parse
-
+import jsonschema._types
 api = Namespace('activity')
 
 api.model('Activity', {
@@ -16,7 +16,18 @@ api.model('Activity', {
     'lat': fields.Float,
     'lng': fields.Float,
     'name': fields.String,
-    'number': fields.String
+    'number': fields.String,
+    'address': fields.String,
+    'institution': fields.String
+})
+
+api.model('PostActivity', {
+    'category': fields.String,
+    'lat': fields.Float,
+    'lng': fields.Float,
+    'name': fields.String,
+    'number': fields.String,
+    'institution': fields.String
 })
 
 api.model('PostReservation', {
@@ -29,6 +40,7 @@ api.model('ReservationInfo', {
     'category': fields.String,
     'lat': fields.Float,
     'lng': fields.Float,
+    'address': fields.String,
     'reservation_id': fields.String,
     'time': fields.DateTime
 })
@@ -64,15 +76,18 @@ class List(Resource):
         if not res['documents']:
             return {'message': "Can't find address"}, 404
         region = res['documents'][0]['address']
-
+        print("RUNNING ON THS SCRIPT")
         activities = db['activities'].find({
             'city': region['region_1depth_name'],
             'gu': region['region_2depth_name'],
         })
+        print("RUNNING ON THS SCRIPT")
         activities = list(activities)
-
+        activities_result = []
+        for activity in activities:
+            activities_result.append(api.marshal(activity, api.models['Activity']))
         # TODO 마샬링
-        return {'count': len(activities), 'activities': activities}
+        return {'count': len(activities), 'activities': activities_result}
 
 
 @api.route("/<_id>")
@@ -161,7 +176,9 @@ class ReservationList(Resource):
                     "lng": "$res.lng",
                     "category": "$res.category",
                     "reservation_id": "$_id",
-                    "time": "$time"
+                    "time": "$time",
+                    "address": "$res.address",
+                    "institution": "$res.institution"
                 }
             }
         ])
@@ -249,3 +266,28 @@ class ReservationAdmin(Resource):
             return {'count': len(lists), 'list': lists}
         except InvalidId:
             return {'message': utils.ERROR_MESSAGES['invalid_objectid']}
+
+
+@api.route("/")
+class AddActivity(Resource):
+    @api.doc(security="jwt")
+    @api.expect(api.models['PostActivity'])
+    @utils.auth_required
+    def post(self):
+        db: Database = self.api.db
+        data = request.json
+        data['deleted'] = False
+        res = requests.get(
+                "https://dapi.kakao.com/v2/local/geo/coord2address.json?x={}&y={}".format(data['lng'], data['lat']),
+                headers={"Authorization": "KakaoAK " + current_app.config['KAKAO_REST_API_KEY']}
+            ).json()
+        if not res['documents']:
+            return {'message': "Can't find address"}, 404
+        region = res['documents'][0]['address']
+        data['address'] = region['address_name']
+        data['city'] = region['region_1depth_name']
+        data['gu'] = region['region_2depth_name']
+        res = db['activities'].insert_one(
+            data
+        )
+        return {'status': 'successful'}, 200

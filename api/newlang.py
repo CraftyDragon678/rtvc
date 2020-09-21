@@ -50,7 +50,7 @@ class Quiz(Resource):
                     "$set": {'lastquiz': res['_id']}
                     })
                 return {'message': "correct", 'description': res['quiz']['description']}
-            return {'message': "wrong"}
+            return {'message': "wrong", 'description': res['quiz']['description']}
         except ValueError:
             return {'message': utils.ERROR_MESSAGES['bad_request']}, 400
         except KeyError:

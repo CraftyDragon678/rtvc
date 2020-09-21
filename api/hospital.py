@@ -15,7 +15,8 @@ api.model('Hospital', {
     'lat': fields.Float,
     'lng': fields.Float,
     'name': fields.String,
-    'number': fields.String
+    'number': fields.String,
+    'address': fields.String
 })
 
 api.model('PostReservation', {
@@ -75,11 +76,16 @@ class List(Resource):
         for hospital in lists:
             hospital['lat'] = float(hospital['lat'])
             hospital['lng'] = float(hospital['long'])
+            res = requests.get(
+                "https://dapi.kakao.com/v2/local/geo/coord2address.json?x={}&y={}".format(hospital['lng'], hospital['lat']),
+                headers={"Authorization": "KakaoAK " + current_app.config['KAKAO_REST_API_KEY']}
+            ).json()
+            hospital['address'] = res['documents'][0]['address']['address_name']
             del hospital['long']
             db['hospitals'].update_one({'number': hospital['number']}, {"$set": hospital}, upsert=True)
             res = db['hospitals'].find_one({'number': hospital['number']})
             hospitals.append(api.marshal(res, api.models['Hospital']))
-
+            
         return {'count': len(lists), 'hospitals': hospitals}
 
 @api.route("/<_id>")
@@ -167,7 +173,8 @@ class ReservationList(Resource):
                     "lat": "$res.lat",
                     "lng": "$res.lng",
                     "reservation_id": "$_id",
-                    "time": "$time"
+                    "time": "$time",
+                    "address": "$res.address"
                 }
             }
         ])

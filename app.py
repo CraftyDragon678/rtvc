@@ -10,7 +10,7 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     debug = bool(os.getenv("DEBUG"))
-    port = os.getenv("PORT") or 5000
+    port = os.getenv("PORT") or 4700
 
     if os.getenv("HTTPS") == "true":
         ssl_contxt = ssl.SSLContext(ssl.PROTOCOL_TLS)

@@ -36,7 +36,7 @@ class PostAdvise(Resource):
                     'to': data['to'],
                     'code': data['code'],
                     'message': data['message'],
-                    'todos': todos
+                    'todos': data['todos']
                 })
 
             return {'status': "success"}
