@@ -1,5 +1,5 @@
 from flask import request, g
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields, reqparse
 from pymongo.database import Database
 import utils
 
@@ -18,6 +18,19 @@ class Newlang(Resource):
             return res
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
+
+@api.route("/search")
+class SearchNewLang(Resource):
+    @api.param("word", type=str)
+    def get(self):
+        db: Database = self.api.db
+        parser = reqparse.RequestParser()
+        parser.add_argument('word', type=str)
+        args = parser.parse_args()
+        res = db['newlangs'].find_one({'word': args['word']}, projection={'_id': 0, 'word': 1, 'mean': 1})
+        if res:
+            return res
+        return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
 @api.route("/quiz")
 class Quiz(Resource):
