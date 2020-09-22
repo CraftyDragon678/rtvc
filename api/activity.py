@@ -80,7 +80,8 @@ class List(Resource):
             # 'city': region['region_1depth_name'],
             # 'gu': region['region_2depth_name'],
             'city': args['city'],
-            'gu': args['gu']
+            'gu': args['gu'],
+            'category': args['category']
         })
         activities = list(activities)
         activities_result = []
