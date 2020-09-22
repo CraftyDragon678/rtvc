@@ -22,7 +22,7 @@ class TTS():
 
         return encoder.embed_utterance(preprocessed_wav)
     
-    def vocode(self, embed, texts):
+    def vocode(self, embed, texts, array=False):
         embeds = np.stack([embed] * len(texts))
         specs = self.synthesizer.synthesize_spectrograms(texts, embeds)
         breaks = [spec.shape[1] for spec in specs]
@@ -39,6 +39,8 @@ class TTS():
         wav = np.concatenate([i for w, b in zip(wavs, breaks) for i in (w, b)])
 
         wav = encoder.preprocess_wav(wav)
+        if array:
+            return wav
         file = io.BytesIO()
 
         sf.write(file, wav, 16000, format='wav')
