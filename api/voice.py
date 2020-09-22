@@ -50,7 +50,7 @@ class Voice(Resource):
             })
         return {'status': "success"}
 
-@api.route("play")
+@api.route("/play")
 class PlayVoice(Resource):
     def get(self):
         """
