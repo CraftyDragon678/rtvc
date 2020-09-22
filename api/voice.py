@@ -28,7 +28,6 @@ class Voice(Resource):
         data = request.json
 
         wav = tts.vocode(embed, data['text'])
-        wav.seek(0)
         return send_file(wav, mimetype='audio/wav')
 
     @api.doc(security="jwt")
