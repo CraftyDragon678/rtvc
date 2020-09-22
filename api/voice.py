@@ -88,7 +88,6 @@ class Hello(Resource):
             "$set": {'care': data['text']}
         })
 
-        # TODO threading, save file
         embed = np.array(res['data'], dtype=np.float32)
         wav = tts.vocode(embed, data['text'], True)
         db['cares'].insert_one({
