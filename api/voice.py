@@ -78,9 +78,18 @@ class Hello(Resource):
     def put(self):
         data = request.json
 
+        tts: TTS = self.api.tts
         db: Database = self.api.db
+        res = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
+
+        if not res:
+            return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
         db['users'].update_one({'_id': g.user['_id']}, {
             "$set": {'care': data['text']}
         })
+
+        # TODO threading, save file
+        embed = np.array(res['data'], dtype=np.float32)
+        wav = tts.vocode(embed, data['text'])
 
         return {'status': "success"}
