@@ -83,3 +83,5 @@ class Hello(Resource):
         db['users'].update_one({'_id': g.user['_id']}, {
             "$set": {'care': data['text']}
         })
+
+        return {'status': "success"}
