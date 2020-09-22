@@ -73,7 +73,13 @@ class Hello(Resource):
             return send_file(wav, mimetype='audio/wav')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
+    @api.expect(api.models['RequestVoice'])
     @api.doc(security="jwt")
     @utils.auth_required
     def put(self):
-        pass
+        data = request.json
+
+        db: Database = self.api.db
+        db['users'].update_one({'_id': g.user['_id']}, {
+            "$set": {'care': data['text']}
+        })
