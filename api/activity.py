@@ -59,29 +59,30 @@ api.model('ReservationAdminInfo', {
 @api.route("/list")
 class List(Resource):
     @api.param('category', "EDU 교육/FUN 재미활동/SCL 사교활동", enum=["EDU", "FUN", "SCL"])
-    @api.param('lat', "위도", type=float)
-    @api.param('lng', "경도", type=float)
+    @api.param('city', "도시", type=str)
+    @api.param('gu', "구", type=str)
     def get(self):
         db: Database = self.api.db
         parser = reqparse.RequestParser()
         parser.add_argument('category')
-        parser.add_argument('lat', type=float)
-        parser.add_argument('lng', type=float)
+        parser.add_argument('city', type=str)
+        parser.add_argument('gu', type=str)
         args = parser.parse_args()
 
-        res = requests.get(
-                "https://dapi.kakao.com/v2/local/geo/coord2address.json?x={}&y={}".format(args['lng'], args['lat']),
-                headers={"Authorization": "KakaoAK " + current_app.config['KAKAO_REST_API_KEY']}
-            ).json()
-        if not res['documents']:
-            return {'message': "Can't find address"}, 404
-        region = res['documents'][0]['address']
-        print("RUNNING ON THS SCRIPT")
+        # res = requests.get(
+        #         "https://dapi.kakao.com/v2/local/geo/coord2address.json?x={}&y={}".format(args['lng'], args['lat']),
+        #         headers={"Authorization": "KakaoAK " + current_app.config['KAKAO_REST_API_KEY']}
+        #     ).json()
+        # if not res['documents']:
+        #     return {'message': "Can't find address"}, 404
+        # region = res['documents'][0]['address']
         activities = db['activities'].find({
-            'city': region['region_1depth_name'],
-            'gu': region['region_2depth_name'],
+            # 'city': region['region_1depth_name'],
+            # 'gu': region['region_2depth_name'],
+            'city': args['city'],
+            'gu': args['gu'],
+            'category': args['category']
         })
-        print("RUNNING ON THS SCRIPT")
         activities = list(activities)
         activities_result = []
         for activity in activities:
