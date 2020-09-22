@@ -50,7 +50,7 @@ class Hello(Resource):
     @utils.nugu_auth_required
     def get(self):
         db: Database = self.api.db
-        res = db['hello'].find_one({'who': g.user['_id']})
+        res = db['hellos'].find_one({'who': g.user['_id']})
         if res:
             wav = res['data']
             file = io.BytesIO()
@@ -64,7 +64,7 @@ class Hello(Resource):
     @utils.nugu_auth_required
     def get(self):
         db: Database = self.api.db
-        res = db['care'].find_one({'who': g.user['_id']})
+        res = db['cares'].find_one({'who': g.user['_id']})
         if res:
             wav = res['data']
             file = io.BytesIO()
@@ -90,6 +90,11 @@ class Hello(Resource):
 
         # TODO threading, save file
         embed = np.array(res['data'], dtype=np.float32)
-        wav = tts.vocode(embed, data['text'])
+        wav = tts.vocode(embed, data['text'], True)
+        db['cares'].insert_one({
+            'who': g.user['_id'],
+            'data': wav.tolist(),
+            'createdAt': datetime.utcnow()
+            })
 
         return {'status': "success"}
