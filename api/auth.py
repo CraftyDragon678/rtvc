@@ -46,8 +46,8 @@ class Kakao(Resource):
 
         me = res.json()
         kakao_account = me['kakao_account']
-
         get_attr = lambda attr: kakao_account[attr] if kakao_account['has_' + attr] and not kakao_account[attr + '_needs_agreement'] else None
+        rep = db['users'].find_one({'_id': me['id']})
         userdata = {
             '_id': me['id'],
             'type': "KAKAO",
@@ -58,7 +58,17 @@ class Kakao(Resource):
             'birthday': get_attr('birthday'),
             'gender': get_attr('gender'),
         }
-        
+        if not rep:
+            userdata['city'] = '대전'
+            userdata['gu'] = '동구'
+        else:
+            if not 'city' in rep:
+                userdata['city'] = '대전'
+                userdata['gu'] = '동구'
+            else:
+                userdata['city'] = rep['city']
+                userdata['gu'] = rep['gu']
+                
         db['users'].update({'_id': me['id']}, {"$set": userdata}, upsert=True)
 
         userdata['exp'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=60 * 60 * 24)
