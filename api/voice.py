@@ -44,6 +44,19 @@ class Voice(Resource):
             })
         return {'status': "success"}
 
+@api.route("play")
+class PlayVoice(Resource):
+    def get(self):
+        db: Database = self.api.db
+
+        token = request.args.get("token")
+        res = db['voices'].find_one({'token': token})
+
+        file = io.BytesIO()
+        sf.write(file, np.array(res['data']), 16000, format='wav')
+        file.seek(0)
+        return send_file(file, mimetype='audio/wav')
+
 @api.route("/hello")
 @api.response(404, "there is not embed data")
 class Hello(Resource):
