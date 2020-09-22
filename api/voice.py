@@ -20,6 +20,9 @@ class Voice(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def get(self):
+        """
+            텍스트를 받아서 vocode 시킨 후 파일 전달
+        """
         tts: TTS = self.api.tts
         db: Database = self.api.db
 
@@ -33,6 +36,9 @@ class Voice(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
     def post(self):
+        """
+            원본 목소리를 받아서 embeding시킴
+        """
         tts: TTS = self.api.tts
         db: Database = self.api.db
 
@@ -47,6 +53,9 @@ class Voice(Resource):
 @api.route("play")
 class PlayVoice(Resource):
     def get(self):
+        """
+            토큰을 가지고 미리 생성해둔 파일 전달
+        """
         db: Database = self.api.db
 
         token = request.args.get("token")
