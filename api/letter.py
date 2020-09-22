@@ -3,7 +3,6 @@ from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from datetime import datetime
 import random
 import db
 import utils
@@ -13,8 +12,8 @@ api = Namespace('letter')
 api.model('Letter', {
     'from': fields.Integer,
     'to': fields.Integer,
+    'to_name': fields.String,
     'title': fields.String(required=True),
-    'date': fields.DateTime(dt_format='rfc822'),
     'file': fields.String,
     'message': fields.String
 })
@@ -30,8 +29,10 @@ api.model('LetterInfo', {
     '_id': fields.String,
     'from': fields.Integer,
     'to': fields.Integer,
+    'to_name': fields.String,
     'title': fields.String,
-    'date': fields.DateTime(dt_format='rfc822'),
+    'file': fields.String,
+    'message': fields.String
 })
 
 @api.route("/")
@@ -52,8 +53,8 @@ class Letter(Resource):
         newdata = {
             'from': g.user['_id'],
             'to': data['to'],
+            'from_name': g.user['nickname'],
             'title': data['title'],
-            'date': datetime.utcnow(),
             'deleted_from': False,
             'deleted_to': False
         }
@@ -123,7 +124,7 @@ class List(Resource):
             },
             {
                 "$project": {
-                    "from": 1, "to": 1, "title": 1, "date": 1
+                    "from": 1, "to": 1, "title": 1
                 }
             }
         ])
@@ -131,3 +132,4 @@ class List(Resource):
             'status': 'success',
             'letters': api.marshal(list(letters), api.models['LetterInfo'])
         }
+
