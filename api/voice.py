@@ -2,6 +2,8 @@ from flask import request, g, send_file
 from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from datetime import datetime
+import io
+import soundfile as sf
 import numpy as np
 from utils import TTS
 import utils
@@ -42,3 +44,36 @@ class Voice(Resource):
             'createdAt': datetime.utcnow()
             })
         return {'status': "success"}
+
+@api.route("/hello")
+@api.response(404, "there is not embed data")
+class Hello(Resource):
+    @utils.nugu_auth_required
+    def get(self):
+        db: Database = self.api.db
+        res = db['hello'].find_one({'who': g.user['_id']})
+        if res:
+            wav = res['data']
+            file = io.BytesIO()
+            sf.write(file, wav, 16000, format='wav')
+            return send_file(wav, mimetype='audio/wav')
+        return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
+
+@api.route("/care")
+@api.response(404, "there is not embed data or didn't set care message")
+class Hello(Resource):
+    @utils.nugu_auth_required
+    def get(self):
+        db: Database = self.api.db
+        res = db['care'].find_one({'who': g.user['_id']})
+        if res:
+            wav = res['data']
+            file = io.BytesIO()
+            sf.write(file, wav, 16000, format='wav')
+            return send_file(wav, mimetype='audio/wav')
+        return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
+
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def put(self):
+        pass
