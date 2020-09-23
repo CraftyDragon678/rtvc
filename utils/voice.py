@@ -43,6 +43,6 @@ class TTS():
             return wav
         file = io.BytesIO()
 
-        sf.write(file, wav, 16000, format='wav')
+        sf.write(file, wav, 16000, format='mp3')
         file.seek(0)
         return file

@@ -2,7 +2,7 @@ from flask import request, g, send_file
 from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from datetime import datetime
-import io
+import io, threading
 import soundfile as sf
 import numpy as np
 from utils import TTS
@@ -19,19 +19,13 @@ class Voice(Resource):
     @api.expect(api.models['RequestVoice'])
     @api.doc(security="jwt")
     @utils.auth_required
+    @api.response(404, "not ready or didn't request")
     def get(self):
         """
-            텍스트를 받아서 vocode 시킨 후 파일 전달
+            /voice/play uri 전달
         """
-        tts: TTS = self.api.tts
-        db: Database = self.api.db
+        pass
 
-        res = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
-        embed = np.array(res['data'], dtype=np.float32)
-        data = request.json
-
-        wav = tts.vocode(embed, data['text'])
-        return send_file(wav, mimetype='audio/wav')
 
     @api.doc(security="jwt")
     @utils.auth_required
@@ -50,6 +44,26 @@ class Voice(Resource):
             })
         return {'status': "success"}
 
+@api.route("/req")
+class RequestVoice(Resource):
+    @api.expect(api.models['RequestVoice'])
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def post(self):
+        """
+            텍스트를 받아서 vocode 시킨 후 파일 전달
+        """
+        tts: TTS = self.api.tts
+        db: Database = self.api.db
+
+        res = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
+        embed = np.array(res['data'], dtype=np.float32)
+        data = request.json
+
+        wav = tts.vocode(embed, data['text'])
+        # TODO save wav
+        return {'status': "success"}
+
 @api.route("/play")
 class PlayVoice(Resource):
     def get(self):
@@ -62,9 +76,9 @@ class PlayVoice(Resource):
         res = db['voices'].find_one({'token': token})
 
         file = io.BytesIO()
-        sf.write(file, np.array(res['data']), 16000, format='wav')
+        sf.write(file, np.array(res['data']), 16000, format='mp3')
         file.seek(0)
-        return send_file(file, mimetype='audio/wav')
+        return send_file(file, mimetype='audio/mp3')
 
 @api.route("/hello")
 @api.response(404, "there is not embed data")
@@ -76,8 +90,8 @@ class Hello(Resource):
         if res:
             wav = res['data']
             file = io.BytesIO()
-            sf.write(file, wav, 16000, format='wav')
-            return send_file(wav, mimetype='audio/wav')
+            sf.write(file, wav, 16000, format='mp3')
+            return send_file(wav, mimetype='audio/mp3')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
 @api.route("/care")
@@ -90,8 +104,8 @@ class Hello(Resource):
         if res:
             wav = res['data']
             file = io.BytesIO()
-            sf.write(file, wav, 16000, format='wav')
-            return send_file(wav, mimetype='audio/wav')
+            sf.write(file, wav, 16000, format='mp3')
+            return send_file(wav, mimetype='audio/mp3')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
     @api.expect(api.models['RequestVoice'])
