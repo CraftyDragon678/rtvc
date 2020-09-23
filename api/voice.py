@@ -39,6 +39,7 @@ class Voice(Resource):
     def post(self):
         """
             원본 목소리를 받아서 embeding시킴
+            TODO generate hello data
         """
         tts: TTS = self.api.tts
         db: Database = self.api.db
