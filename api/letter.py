@@ -1,4 +1,4 @@
-from flask import request, g
+from flask import request, g, send_from_directory
 from flask_restplus import Namespace, Resource, fields
 from werkzeug import secure_filename
 from pymongo.database import Database
@@ -137,16 +137,17 @@ class List(Resource):
 
 @api.route("/file")
 class List(Resource):
-    def get(self):
-        db: Database = self.api.db
-        db['letters'].find_one({'file_token': request.args.get('token')})
-
     @api.doc(security="jwt")
     @utils.auth_required
     def post(self):
         audio = request.files['audio']
-        audio.save("files/" + secure_filename(audio.filename))
         filename = audio.filename
         ext = filename.split(".")[-1]
         filename = "%32x" % random.getrandbits(128) + "." + ext
+        audio.save("files/" + secure_filename(filename))
         return {'status': "success", 'filename': filename}
+
+@api.route("/file/<path:path>")
+class StaticFile(Resource):
+    def get(self, path):
+        return send_from_directory('files', path)
