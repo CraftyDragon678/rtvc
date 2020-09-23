@@ -2,7 +2,7 @@ from flask import request, g, send_file
 from flask_restplus import Namespace, Resource, fields
 from pymongo.database import Database
 from datetime import datetime
-import io, threading
+import io, threading, random
 import soundfile as sf
 import numpy as np
 from utils import TTS
@@ -24,8 +24,14 @@ class Voice(Resource):
         """
             /voice/play uri 전달
         """
-        pass
+        db: Database = self.api.db
+        data = request.json
 
+        embed = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
+        res = db['voices'].find_one({'who': g.user['_id'], 'text': data['text']}, sort=[('createdAt', -1)])
+        if res['createdAt'] < embed['createdAt']:
+            return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
+        return {'url': f"/voice/play?token={res['token']}"}
 
     @api.doc(security="jwt")
     @utils.auth_required
@@ -60,8 +66,14 @@ class RequestVoice(Resource):
         embed = np.array(res['data'], dtype=np.float32)
         data = request.json
 
-        wav = tts.vocode(embed, data['text'])
-        # TODO save wav
+        wav = tts.vocode(embed, data['text'], True)
+        db['voices'].insert_one({
+            'token': "%32x" % random.getrandbits(128),
+            'who': g.user['_id'],
+            'text': data['text'],
+            'data': wav.tolist(),
+            'createdAt': datetime.utcnow()
+        })
         return {'status': "success"}
 
 @api.route("/play")
