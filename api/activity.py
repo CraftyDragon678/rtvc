@@ -302,3 +302,72 @@ class AddActivity(Resource):
             data
         )
         return {'status': 'successful'}, 200
+
+
+@api.route("/recommend")
+class RecommendActivity(Resource):
+    @api.doc(security="jwt")
+    @utils.auth_required
+    def get(self):
+        db: Database = self.api.db
+        res = db['activityreservations'].aggregate([
+            {
+                "$match": {
+                    "who": g.user['_id']
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "activities",
+                    "let": { "id": "$code" },
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$eq": ["$_id", "$$id"]
+                                }
+                            }
+                        }
+                    ],
+                    "as": "res"
+                }
+            },
+            {
+                "$unwind": "$res"
+            },
+            {
+                "$group": {
+                    "_id": {
+                        'categories': '$res.category'          
+                    }, 
+                    "count": { "$sum": 1 }
+                } 
+            },
+            { "$sort": {"_id.category": 1 } },
+            {
+                "$group": {
+                    "_id": "$_id.categories",
+                    "count": { "$first": "$count" }      
+                }
+            }
+        ])
+        res = list(res)
+        if res == []:
+            activities = db['activities'].find({
+                # 'city': region['region_1depth_name'],
+                # 'gu': region['region_2depth_name'],
+                'city': g.user['city'],
+                'gu': g.user['gu']
+            })
+        else:
+            activities = db['activities'].find({
+                'city': g.user['city'],
+                'gu': g.user['gu'],
+                'category': res[0]['_id']
+            })
+        activities = list(activities)
+        activities_result = []
+        for activity in activities:
+            activities_result.append(api.marshal(activity, api.models['Activity']))
+        # TODO 마샬링
+        return {'count': len(activities), 'activities': activities_result}
