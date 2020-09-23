@@ -39,7 +39,6 @@ class Voice(Resource):
     def post(self):
         """
             원본 목소리를 받아서 embeding시킴
-            TODO generate hello data
         """
         tts: TTS = self.api.tts
         db: Database = self.api.db
@@ -48,6 +47,21 @@ class Voice(Resource):
         db['embeds'].insert_one({
             'who': g.user['_id'],
             'data': embed.tolist(),
+            'createdAt': datetime.utcnow()
+            })
+        care = db['users'].find_one({'_id': g.user['_id']})
+        if 'care' in care:
+            wav = tts.vocode(embed, care['care'], True)
+            db['cares'].insert_one({
+                'who': g.user['_id'],
+                'data': wav.tolist(),
+                'createdAt': datetime.utcnow()
+                })
+        
+        wav = tts.vocode(embed, "안녕하세요", True)
+        db['hellos'].insert_one({
+            'who': g.user['_id'],
+            'data': wav.tolist(),
             'createdAt': datetime.utcnow()
             })
         return {'status': "success"}
