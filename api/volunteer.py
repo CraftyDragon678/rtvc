@@ -12,6 +12,7 @@ api = Namespace('volunteer')
 api.model('Letter', {
     'from': fields.Integer,
     'to': fields.Integer,
+    'from_name': fields.String,
     'title': fields.String(required=True),
     'file': fields.String,
     'message': fields.String
@@ -29,6 +30,9 @@ api.model('LetterInfo', {
     'from': fields.Integer,
     'to': fields.Integer,
     'title': fields.String,
+    'from_name': fields.String,
+    'file': fields.String,
+    'message': fields.String
 })
 
 @api.route("/")
@@ -50,6 +54,7 @@ class Volunteer(Resource):
             'from': g.user['_id'],
             'to': data['to'],
             'title': data['title'],
+            'from_name': g.user['nickname'],
         }
         if 'file' in data:
             newdata['file'] = data['file']
@@ -106,11 +111,11 @@ class List(Resource):
                     ]
                 }
             },
-            {
-                "$project": {
-                    "from": 1, "to": 1, "title": 1
-                }
-            }
+            # {
+            #     "$project": {
+            #         "from": 1, "to": 1, "title": 1
+            #     }
+            # }
         ])
         return {
             'status': 'success',
