@@ -17,7 +17,11 @@ class TTS():
         vocoder.load_model(Path("vocoder/saved_models/pretrained/pretrained.pt"))
 
     def encode(self, f: FileStorage):
-        data, _ = sf.read(f)
+        from pydub import AudioSegment
+        sound = AudioSegment.from_wav(f)
+        sound = sound.set_channels(1)
+        sound.export('files.wav', format="wav")
+        data, _ = sf.read('files.wav')
         wav = data.T
         preprocessed_wav = encoder.preprocess_wav(wav)
 

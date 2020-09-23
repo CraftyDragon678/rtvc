@@ -29,7 +29,7 @@ class Voice(Resource):
         data = request.json
 
         embed = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
-        res = db['voices'].find_one({'who': g.user['_id'], 'text': data['text']}, sort=[('createdAt', -1)])
+        res = db['voice'].find_one({'who': g.user['_id'], 'text': data['text']}, sort=[('createdAt', -1)])
         if (not res) or (not embed) or res['createdAt'] < embed['createdAt']:
             return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
         return {'url': f"/voice/play?token={res['token']}"}
@@ -69,7 +69,7 @@ class RequestVoice(Resource):
         data = request.json
 
         wav = tts.vocode(embed, data['text'], True)
-        db['voices'].insert_one({
+        db['voice'].insert_one({
             'token': "%32x" % random.getrandbits(128),
             'who': g.user['_id'],
             'text': data['text'],
@@ -87,8 +87,8 @@ class PlayVoice(Resource):
         db: Database = self.api.db
 
         token = request.args.get("token")
-        res = db['voices'].find_one({'token': token}, sort=[('createdAt', -1)])
-
+        res = db['voice'].find_one({'token': token}, sort=[('createdAt', -1)])
+        
         file = io.BytesIO()
         sf.write(file, np.array(res['data']), 16000, format='wav')
         file.seek(0)
