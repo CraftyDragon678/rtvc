@@ -117,7 +117,7 @@ class Hello(Resource):
             file = io.BytesIO()
             wav.export(file)
             file.seek(0)
-            return send_file(wav, mimetype='audio/mpeg')
+            return send_file(file, mimetype='audio/mpeg')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
 @api.route("/care")
@@ -138,7 +138,7 @@ class Hello(Resource):
             file = io.BytesIO()
             wav.export(file)
             file.seek(0)
-            return send_file(wav, mimetype='audio/mpeg')
+            return send_file(file, mimetype='audio/mpeg')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
     @api.expect(api.models['RequestVoice'])
