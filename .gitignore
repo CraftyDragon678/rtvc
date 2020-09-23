@@ -9,3 +9,5 @@ __pycache__
 
 datasets
 saved_models
+files/**
+!files/empty
