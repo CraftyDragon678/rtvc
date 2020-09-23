@@ -86,7 +86,7 @@ class PlayVoice(Resource):
         db: Database = self.api.db
 
         token = request.args.get("token")
-        res = db['voices'].find_one({'token': token})
+        res = db['voices'].find_one({'token': token}, sort=[('createdAt', -1)])
 
         file = io.BytesIO()
         sf.write(file, np.array(res['data']), 16000, format='wav')
@@ -105,7 +105,7 @@ class Hello(Resource):
     @utils.nugu_auth_required
     def get(self):
         db: Database = self.api.db
-        res = db['hellos'].find_one({'who': g.user['_id']})
+        res = db['hellos'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
         if res:
             wav = res['data']
             file = io.BytesIO()
@@ -126,7 +126,7 @@ class Hello(Resource):
     @utils.nugu_auth_required
     def get(self):
         db: Database = self.api.db
-        res = db['cares'].find_one({'who': g.user['_id']})
+        res = db['cares'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
         if res:
             wav = res['data']
             file = io.BytesIO()
