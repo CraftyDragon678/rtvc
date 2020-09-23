@@ -16,7 +16,7 @@ import os
 
 class AgayaApi(Flask):
     def __init__(self):
-        super().__init__(__name__, static_folder='files')
+        super().__init__(__name__)
         self.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
         self.api = Api(self, title="Agaya API", version='0.2', authorizations={
