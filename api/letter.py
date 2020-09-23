@@ -1,6 +1,6 @@
 from flask import request, g, send_from_directory
 from flask_restplus import Namespace, Resource, fields
-from werkzeug import secure_filename
+from werkzeug.utils  import secure_filename
 from pymongo.database import Database
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
