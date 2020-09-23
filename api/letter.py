@@ -4,7 +4,7 @@ from werkzeug.utils  import secure_filename
 from pymongo.database import Database
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-import random
+import random, os
 import db
 import utils
 
@@ -150,4 +150,4 @@ class List(Resource):
 @api.route("/file/<path:path>")
 class StaticFile(Resource):
     def get(self, path):
-        return send_from_directory('files', path)
+        return send_from_directory("../files", path, as_attachment=True)
