@@ -29,7 +29,7 @@ class Voice(Resource):
 
         embed = db['embeds'].find_one({'who': g.user['_id']}, sort=[('createdAt', -1)])
         res = db['voices'].find_one({'who': g.user['_id'], 'text': data['text']}, sort=[('createdAt', -1)])
-        if res['createdAt'] < embed['createdAt']:
+        if (not res) or (not embed) or res['createdAt'] < embed['createdAt']:
             return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
         return {'url': f"/voice/play?token={res['token']}"}
 
