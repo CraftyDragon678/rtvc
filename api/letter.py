@@ -150,4 +150,4 @@ class List(Resource):
 @api.route("/file/<path:path>")
 class StaticFile(Resource):
     def get(self, path):
-        return send_from_directory('files', path)
+        return send_from_directory(self.api.app.static_folder, path, as_attachment=True)
