@@ -17,7 +17,8 @@ class UserList(Resource):
         db: Database = self.api.db
         res = db['users'].find({}, projection={'_id': 1, 'nickname': 1})
         res = list(res)
-        return res
+        return {
+            "users": res }
 
 @api.route("/position")
 class Position(Resource):

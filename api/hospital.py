@@ -146,6 +146,7 @@ class ReservationList(Resource):
                 "$gte": date,
                 "$lt": date + timedelta(days=1)
             }
+        _filter['deleted'] = False
         res = db['hospitalreservations'].aggregate([
             {
                 "$match": _filter

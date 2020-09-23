@@ -18,7 +18,8 @@ api.model('Activity', {
     'name': fields.String,
     'number': fields.String,
     'address': fields.String,
-    'institution': fields.String
+    'institution': fields.String,
+    'time': fields.String
 })
 
 api.model('PostActivity', {
@@ -27,12 +28,13 @@ api.model('PostActivity', {
     'lng': fields.Float,
     'name': fields.String,
     'number': fields.String,
-    'institution': fields.String
+    'institution': fields.String,
+    'time': fields.DateTime(dt_format='rfc822')
 })
 
 api.model('PostReservation', {
     'code': fields.String,
-    'time': fields.DateTime(dt_format='rfc822')
+    'time': fields.String
 })
 
 api.model('ReservationInfo', {
@@ -42,13 +44,13 @@ api.model('ReservationInfo', {
     'lng': fields.Float,
     'address': fields.String,
     'reservation_id': fields.String,
-    'time': fields.DateTime(dt_format='rfc822')
+    'time': fields.String
 })
 
 
 api.model('ReservationAdminInfo', {
     'reservation_id': fields.String(attribute='_id'),
-    'time': fields.DateTime(dt_format='rfc822'),
+    'time': fields.String,
     'who': fields.Nested({
         '_id': fields.Integer,
         'email': fields.String,
@@ -76,13 +78,21 @@ class List(Resource):
         # if not res['documents']:
         #     return {'message': "Can't find address"}, 404
         # region = res['documents'][0]['address']
-        activities = db['activities'].find({
-            # 'city': region['region_1depth_name'],
-            # 'gu': region['region_2depth_name'],
-            'city': args['city'],
-            'gu': args['gu'],
-            'category': args['category']
-        })
+        if args['category'] == None:
+            activities = db['activities'].find({
+                # 'city': region['region_1depth_name'],
+                # 'gu': region['region_2depth_name'],
+                'city': args['city'],
+                'gu': args['gu']
+            })
+        else:
+            activities = db['activities'].find({
+                # 'city': region['region_1depth_name'],
+                # 'gu': region['region_2depth_name'],
+                'city': args['city'],
+                'gu': args['gu'],
+                'category': args['category']
+            })
         activities = list(activities)
         activities_result = []
         for activity in activities:
@@ -111,7 +121,6 @@ class PostReservation(Resource):
     def post(self):
         db: Database = self.api.db
         data = request.json
-
         try:
             if not db['activities'].find_one({'_id': ObjectId(data['code'])}):
                 return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
@@ -138,7 +147,7 @@ class ReservationList(Resource):
         args = parser.parse_args()
         db: Database = self.api.db
 
-        _filter = {'who': g.user['_id']}
+        _filter = {'who': g.user['_id'], 'deleted': False}
 
         if args['time']:
             date = parse(args['time'])
@@ -147,6 +156,7 @@ class ReservationList(Resource):
                 "$gte": date,
                 "$lt": date + timedelta(days=1)
             }
+
         res = db['activityreservations'].aggregate([
             {
                 "$match": _filter

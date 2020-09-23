@@ -118,7 +118,6 @@ class Now(Resource):
 class Eat(Resource):
     @api.doc(security="jwt")
     @utils.auth_required
-    @api.marshal_with(api.models['EatMedicine'])
     def post(self):
         db: Database = self.api.db
         data = request.json

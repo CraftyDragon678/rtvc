@@ -12,7 +12,7 @@ api = Namespace('letter')
 api.model('Letter', {
     'from': fields.Integer,
     'to': fields.Integer,
-    'to_name': fields.String,
+    'from_name': fields.String,
     'title': fields.String(required=True),
     'file': fields.String,
     'message': fields.String
@@ -29,7 +29,7 @@ api.model('LetterInfo', {
     '_id': fields.String,
     'from': fields.Integer,
     'to': fields.Integer,
-    'to_name': fields.String,
+    'from_name': fields.String,
     'title': fields.String,
     'file': fields.String,
     'message': fields.String
@@ -121,12 +121,13 @@ class List(Resource):
                         {"to": g.user['_id'], "deleted_to": False},
                     ]
                 }
-            },
-            {
-                "$project": {
-                    "from": 1, "to": 1, "title": 1
-                }
             }
+            # ,
+            # {
+            #     "$project": {
+            #         "from": 1, "to": 1, "title": 1, "from_name": 1
+            #     }
+            # }
         ])
         return {
             'status': 'success',
