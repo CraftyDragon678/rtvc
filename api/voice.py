@@ -4,6 +4,7 @@ from pymongo.database import Database
 from datetime import datetime
 import io, threading, random
 import soundfile as sf
+from pydub import AudioSegment
 import numpy as np
 from utils import TTS
 import utils
@@ -88,9 +89,15 @@ class PlayVoice(Resource):
         res = db['voices'].find_one({'token': token})
 
         file = io.BytesIO()
-        sf.write(file, np.array(res['data']), 16000, format='mp3')
+        sf.write(file, np.array(res['data']), 16000, format='wav')
         file.seek(0)
-        return send_file(file, mimetype='audio/mp3')
+        wav = AudioSegment.from_file(file, 'wav')
+        file.close()
+
+        file = io.BytesIO()
+        wav.export(file)
+        file.seek(0)
+        return send_file(file, mimetype='audio/mpeg')
 
 @api.route("/hello")
 @api.response(404, "there is not embed data")
@@ -102,8 +109,15 @@ class Hello(Resource):
         if res:
             wav = res['data']
             file = io.BytesIO()
-            sf.write(file, wav, 16000, format='mp3')
-            return send_file(wav, mimetype='audio/mp3')
+            sf.write(file, wav, 16000, format='wav')
+            file.seek(0)
+            wav = AudioSegment.from_file(file, 'wav')
+            file.close()
+
+            file = io.BytesIO()
+            wav.export(file)
+            file.seek(0)
+            return send_file(wav, mimetype='audio/mpeg')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
 @api.route("/care")
@@ -116,8 +130,15 @@ class Hello(Resource):
         if res:
             wav = res['data']
             file = io.BytesIO()
-            sf.write(file, wav, 16000, format='mp3')
-            return send_file(wav, mimetype='audio/mp3')
+            sf.write(file, wav, 16000, format='wav')
+            file.seek(0)
+            wav = AudioSegment.from_file(file, 'wav')
+            file.close()
+
+            file = io.BytesIO()
+            wav.export(file)
+            file.seek(0)
+            return send_file(wav, mimetype='audio/mpeg')
         return {'message': utils.ERROR_MESSAGES['not_exist']}, 404
 
     @api.expect(api.models['RequestVoice'])

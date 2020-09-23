@@ -1,5 +1,6 @@
 import librosa
 import soundfile as sf
+from pydub import AudioSegment
 import numpy as np
 from pathlib import Path
 import io
@@ -43,6 +44,12 @@ class TTS():
             return wav
         file = io.BytesIO()
 
-        sf.write(file, wav, 16000, format='mp3')
+        sf.write(file, wav, 16000, format='wav')
+        file.seek(0)
+        wav = AudioSegment.from_file(file, 'wav')
+        file.close()
+
+        file = io.BytesIO()
+        wav.export(file)
         file.seek(0)
         return file
